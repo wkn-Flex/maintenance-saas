@@ -12,7 +12,9 @@ import os
 app = FastAPI(
     title="售后维保SaaS系统API",
     description="工业设备售后维保管理系统后端接口文档",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json"
 )
 
 # 允许跨域（线上前端和后端域名不同需要）
