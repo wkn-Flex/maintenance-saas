@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>售后维保管理SaaS - 全页面原型</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1890ff',
+                        success: '#52c41a',
+                        warning: '#faad14',
+                        danger: '#ff4d4f',
+                        purple: '#722ed1',
+                        'bg-gray': '#f0f2f5',
+                        'sidebar-bg': '#001529',
+                        'border-color': '#e8e8e8',
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto { content-visibility: auto; }
+            .sidebar-item { @apply flex items-center px-4 py-2.5 text-gray-300 hover:bg-primary/20 hover:text-white transition-colors cursor-pointer text-sm; }
+            .sidebar-item.active { @apply bg-primary text-white; }
+            .sidebar-group-title { @apply px-4 py-2 text-xs text-gray-500 uppercase tracking-wider mt-2; }
+            .btn { @apply px-4 py-1.5 rounded text-sm transition-all cursor-pointer; }
+            .btn-primary { @apply bg-primary text-white hover:bg-primary/90; }
+            .btn-default { @apply bg-white border border-border-color text-gray-700 hover:border-primary hover:text-primary; }
+            .btn-danger { @apply bg-danger text-white hover:bg-danger/90; }
+            .btn-sm { @apply px-2 py-1 text-xs; }
+            .form-input { @apply w-full border border-border-color rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20; }
+            .table th { @apply bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-600 border-b border-border-color; }
+            .table td { @apply px-4 py-3 text-sm text-gray-700 border-b border-border-color; }
+            .tag { @apply px-2 py-0.5 rounded text-xs; }
+            .phone-frame { @apply w-[375px] h-[700px] bg-white rounded-[36px] border-8 border-gray-800 shadow-2xl overflow-hidden relative mx-auto; }
+            .phone-status-bar { @apply h-11 bg-white flex items-center justify-between px-6 text-xs font-medium text-gray-800; }
+        }
+    </style>
+</head>
+<body class="bg-bg-gray min-h-screen">
+    <!-- 登录页 -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
+        <div class="w-[400px] bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center mb-8">
+                <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary text-2xl mx-auto mb-3">
+                    <i class="fa fa-wrench"></i>
+                </div>
+                <h1 class="text-xl font-bold text-gray-800">售后维保管理系统</h1>
+                <p class="text-gray-500 text-sm mt-1">After-sales Maintenance SaaS</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1.5">账号</label>
+                    <input type="text" class="form-input" placeholder="请输入账号" value="admin">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1.5">密码</label>
+                    <input type="password" class="form-input" placeholder="请输入密码" value="123456">
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" class="mr-2"> 记住密码
+                    </label>
+                    <a href="#" class="text-primary hover:underline">忘记密码？</a>
+                </div>
+                <button onclick="login()" class="w-full btn-primary py-2 rounded font-medium">登 录</button>
+            </div>
+            <p class="text-center text-xs text-gray-400 mt-6">© 2026 售后维保管理系统 V1.0</p>
+        </div>
+    </div>
+
+    <!-- 后台主框架 -->
+    <div id="adminLayout" class="min-h-screen flex hidden">
+        <!-- 左侧侧边栏 -->
+        <aside class="w-56 bg-sidebar-bg text-white flex-shrink-0 flex flex-col">
+            <div class="h-16 flex items-center justify-center border-b border-gray-700 flex-shrink-0">
+                <i class="fa fa-wrench text-primary mr-2"></i>
+                <h1 class="text-base font-bold">维保管理系统</h1>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-2">
+                <div class="sidebar-item active" data-page="dashboard" onclick="switchPage('dashboard', this)">
+                    <i class="fa fa-dashboard w-5 mr-3"></i><span>数据看板</span>
+                </div>
+                <div class="sidebar-item" data-page="ticketList" onclick="switchPage('ticketList', this)">
+                    <i class="fa fa-ticket w-5 mr-3"></i><span>工单管理</span>
+                </div>
+                <div class="sidebar-item" data-page="deviceList" onclick="switchPage('deviceList', this)">
+                    <i class="fa fa-cogs w-5 mr-3"></i><span>设备管理</span>
+                </div>
+                <div class="sidebar-item" data-page="partList" onclick="switchPage('partList', this)">
+                    <i class="fa fa-cubes w-5 mr-3"></i><span>备件管理</span>
+                </div>
+                <div class="sidebar-item" data-page="customerList" onclick="switchPage('customerList', this)">
+                    <i class="fa fa-users w-5 mr-3"></i><span>客户管理</span>
+                </div>
+
+                <div class="sidebar-group-title">移动端原型</div>
+                <div class="sidebar-item" data-page="engineerTicket" onclick="switchPage('engineerTicket', this)">
+                    <i class="fa fa-mobile w-5 mr-3 text-lg"></i><span>工程师-我的工单</span>
+                </div>
+                <div class="sidebar-item" data-page="engineerHandle" onclick="switchPage('engineerHandle', this)">
+                    <i class="fa fa-mobile w-5 mr-3 text-lg"></i><span>工程师-工单处理</span>
+                </div>
+                <div class="sidebar-item" data-page="engineerProfile" onclick="switchPage('engineerProfile', this)">
+                    <i class="fa fa-mobile w-5 mr-3 text-lg"></i><span>工程师-个人中心</span>
+                </div>
+                <div class="sidebar-item" data-page="customerHome" onclick="switchPage('customerHome', this)">
+                    <i class="fa fa-mobile w-5 mr-3 text-lg"></i><span>客户-报修首页</span>
+                </div>
+                <div class="sidebar-item" data-page="customerSubmit" onclick="switchPage('customerSubmit', this)">
+                    <i class="fa fa-mobile w-5 mr-3 text-lg"></i><span>客户-提交报修</span>
+                </div>
+                <div class="sidebar-item" data-page="customerProgress" onclick="switchPage('customerProgress', this)">
+                    <i class="fa fa-mobile w-5 mr-3 text-lg"></i><span>客户-工单进度</span>
+                </div>
+
+                <div class="sidebar-group-title">其他</div>
+                <div class="sidebar-item" onclick="logout()">
+                    <i class="fa fa-sign-out w-5 mr-3"></i><span>返回登录页</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 右侧主内容 -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 flex-shrink-0">
+                <h2 id="pageTitle" class="text-lg font-medium text-gray-800">数据看板</h2>
+                <div class="flex items-center gap-4">
+                    <button class="text-gray-500 hover:text-primary relative">
+                        <i class="fa fa-bell-o text-lg"></i>
+                        <span class="absolute -top-1 -right-1 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                    <div class="flex items-center gap-2 cursor-pointer">
+                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <i class="fa fa-user"></i>
+                        </div>
+                        <span class="text-gray-700 text-sm">管理员</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-6">
+                <!-- 数据看板 -->
+                <div id="page-dashboard" class="page-content">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">欢迎回来，管理员</h3>
+                        <p class="text-gray-500 mt-1 text-sm">2026年08月07日，这是今日售后数据概览</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white rounded-lg shadow-sm p-6 flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">今日工单</p>
+                                <p class="text-3xl font-bold text-gray-800 mt-2">12</p>
+                                <p class="text-gray-400 text-xs mt-1">较昨日 +2</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl">
+                                <i class="fa fa-file-text-o"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm p-6 flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">待派单</p>
+                                <p class="text-3xl font-bold text-danger mt-2">3</p>
+                                <p class="text-danger text-xs mt-1">请尽快处理</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center text-danger text-xl">
+                                <i class="fa fa-exclamation-circle"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm p-6 flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">处理中</p>
+                                <p class="text-3xl font-bold text-warning mt-2">8</p>
+                                <p class="text-gray-400 text-xs mt-1">进行中工单</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center text-warning text-xl">
+                                <i class="fa fa-spinner"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm p-6 flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">平均响应时长</p>
+                                <p class="text-3xl font-bold text-success mt-2">42<span class="text-sm ml-1">分钟</span></p>
+                                <p class="text-success text-xs mt-1">较昨日 -8分钟</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center text-success text-xl">
+                                <i class="fa fa-clock-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-1">
+                            <h4 class="text-base font-medium text-gray-800 mb-4">工单状态分布</h4>
+                            <div class="h-64">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-base font-medium text-gray-800">待办工单</h4>
+                                <button class="text-primary text-sm hover:underline">查看全部</button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <span class="tag bg-danger/10 text-danger">待派单</span>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-800">GD20260807001 - 设备故障报修</p>
+                                            <p class="text-xs text-gray-500 mt-1">XX机械有限公司 | 10:23</p>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" onclick="openDispatchModal()">立即派单</button>
+                                </div>
+                                <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <span class="tag bg-danger/10 text-danger">待派单</span>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-800">GD20260807002 - 设备无法启动</p>
+                                            <p class="text-xs text-gray-500 mt-1">XX电子厂 | 09:15</p>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" onclick="openDispatchModal()">立即派单</button>
+                                </div>
+                                <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <span class="tag bg-warning/10 text-warning">待接单</span>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-800">GD20260806008 - 定期保养</p>
+                                            <p class="text-xs text-gray-500 mt-1">张师傅 | 昨天 16:40</p>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-default btn-sm">催单</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 工单列表 -->
+                <div id="page-ticketList" class="page-content hidden">
+                    <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+                        <div class="flex flex-wrap gap-4 items-end">
+                            <div class="w-48">
+                                <label class="block text-xs text-gray-600 mb-1">工单状态</label>
+                                <select class="form-input">
+                                    <option>全部</option>
+                                    <option>待派单</option>
+                                    <option>待接单</option>
+                                    <option>维修中</option>
+                                    <option>已完成</option>
+                                </select>
+                            </div>
+                            <div class="w-48">
+                                <label class="block text-xs text-gray-600 mb-1">故障类型</label>
+                                <select class="form-input">
+                                    <option>全部</option>
+                                    <option>电气故障</option>
+                                    <option>机械故障</option>
+                                    <option>管路故障</option>
+                                </select>
+                            </div>
+                            <div class="w-56">
+                                <label class="block text-xs text-gray-600 mb-1">关键词</label>
+                                <input type="text" class="form-input" placeholder="工单编号/客户名称">
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn btn-primary">查询</button>
+                                <button class="btn btn-default">重置</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <div class="p-4 border-b border-border-color flex justify-between items-center">
+                            <h4 class="font-medium text-gray-800">工单列表</h4>
+                            <button class="btn btn-primary" onclick="openCreateTicketModal()"><i class="fa fa-plus mr-1"></i>新建工单</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full table">
+                                <thead>
+                                    <tr>
+                                        <th>工单编号</th>
+                                        <th>客户名称</th>
+                                        <th>设备编号</th>
+                                        <th>故障类型</th>
+                                        <th>优先级</th>
+                                        <th>状态</th>
+                                        <th>创建时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="switchPage('ticketDetail', document.querySelector('[data-page=ticketList]'))">
+                                        <td class="text-primary">GD20260807001</td>
+                                        <td>XX机械有限公司</td>
+                                        <td>SB202603001</td>
+                                        <td>电气故障</td>
+                                        <td><span class="tag bg-danger/10 text-danger">高</span></td>
+                                        <td><span class="tag bg-danger/10 text-danger">待派单</span></td>
+                                        <td>2026-08-07 10:23</td>
+                                        <td onclick="event.stopPropagation()">
+                                            <button class="text-primary text-sm mr-2" onclick="openDispatchModal()">派单</button>
+                                            <button class="text-danger text-sm">取消</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="switchPage('ticketDetail', document.querySelector('[data-page=ticketList]'))">
+                                        <td class="text-primary">GD20260807002</td>
+                                        <td>XX电子科技有限公司</td>
+                                        <td>SB202602015</td>
+                                        <td>机械故障</td>
+                                        <td><span class="tag bg-warning/10 text-warning">中</span></td>
+                                        <td><span class="tag bg-danger/10 text-danger">待派单</span></td>
+                                        <td>2026-08-07 09:15</td>
+                                        <td onclick="event.stopPropagation()">
+                                            <button class="text-primary text-sm mr-2" onclick="openDispatchModal()">派单</button>
+                                            <button class="text-danger text-sm">取消</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="switchPage('ticketDetail', document.querySelector('[data-page=ticketList]'))">
+                                        <td class="text-primary">GD20260806008</td>
+                                        <td>XX食品加工厂</td>
+                                        <td>SB202601008</td>
+                                        <td>定期保养</td>
+                                        <td><span class="tag bg-gray-100 text-gray-600">低</span></td>
+                                        <td><span class="tag bg-warning/10 text-warning">待接单</span></td>
+                                        <td>2026-08-06 16:40</td>
+                                        <td onclick="event.stopPropagation()">
+                                            <button class="text-primary text-sm mr-2">查看</button>
+                                            <button class="text-gray-500 text-sm">转派</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="switchPage('ticketDetail', document.querySelector('[data-page=ticketList]'))">
+                                        <td class="text-primary">GD20260806007</td>
+                                        <td>XX自动化设备有限公司</td>
+                                        <td>SB202604022</td>
+                                        <td>管路故障</td>
+                                        <td><span class="tag bg-danger/10 text-danger">高</span></td>
+                                        <td><span class="tag bg-primary/10 text-primary">维修中</span></td>
+                                        <td>2026-08-06 14:20</td>
+                                        <td onclick="event.stopPropagation()">
+                                            <button class="text-primary text-sm mr-2">查看</button>
+                                            <button class="text-gray-500 text-sm">转派</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="switchPage('ticketDetail', document.querySelector('[data-page=ticketList]'))">
+                                        <td class="text-primary">GD20260805012</td>
+                                        <td>XX包装有限公司</td>
+                                        <td>SB202603018</td>
+                                        <td>电气故障</td>
+                                        <td><span class="tag bg-warning/10 text-warning">中</span></td>
+                                        <td><span class="tag bg-purple/10 text-purple">待验收</span></td>
+                                        <td>2026-08-05 11:05</td>
+                                        <td onclick="event.stopPropagation()">
+                                            <button class="text-primary text-sm">查看</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-4 flex justify-between items-center text-sm text-gray-500">
+                            <span>共 128 条</span>
+                            <div class="flex gap-1">
+                                <button class="w-8 h-8 border border-border-color rounded flex items-center justify-center hover:border-primary hover:text-primary"><i class="fa fa-chevron-left text-xs"></i></button>
+                                <button class="w-8 h-8 bg-primary text-white rounded flex items-center justify-center">1</button>
+                                <button class="w-8 h-8 border border-border-color rounded flex items-center justify-center hover:border-primary hover:text-primary">2</button>
+                                <button class="w-8 h-8 border border-border-color rounded flex items-center justify-center hover:border-primary hover:text-primary">3</button>
+                                <button class="w-8 h-8 border border-border-color rounded flex items-center justify-center hover:border-primary hover:text-primary"><i class="fa fa-chevron-right text-xs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 工单详情 -->
+                <div id="page-ticketDetail" class="page-content hidden">
+                    <button class="btn btn-default mb-4" onclick="switchPage('ticketList', document.querySelector('[data-page=ticketList]'))"><i class="fa fa-arrow-left mr-1"></i>返回列表</button>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="bg-white rounded-lg shadow-sm p-6">
+                                <div class="flex justify-between items-start mb-6">
+                                    <div>
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <h3 class="text-lg font-semibold text-gray-800">GD20260807001</h3>
+                                            <span class="tag bg-danger/10 text-danger">待派单</span>
+                                            <span class="tag bg-danger/10 text-danger">高优先级</span>
+                                        </div>
+                                        <p class="text-gray-500 text-sm">创建时间：2026-08-07 10:23</p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button class="btn btn-primary" onclick="openDispatchModal()"><i class="fa fa-send mr-1"></i>派单</button>
+                                        <button class="btn btn-default">取消工单</button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div><span class="text-gray-500">客户名称：</span><span class="text-gray-800">XX机械有限公司</span></div>
+                                    <div><span class="text-gray-500">联系人：</span><span class="text-gray-800">王主任 138****5678</span></div>
+                                    <div><span class="text-gray-500">设备编号：</span><span class="text-gray-800">SB202603001</span></div>
+                                    <div><span class="text-gray-500">设备型号：</span><span class="text-gray-800">CK6140数控车床</span></div>
+                                    <div><span class="text-gray-500">故障类型：</span><span class="text-gray-800">电气故障</span></div>
+                                    <div><span class="text-gray-500">设备地址：</span><span class="text-gray-800">XX市XX区工业园12号</span></div>
+                                    <div class="col-span-2">
+                                        <span class="text-gray-500">故障描述：</span>
+                                        <p class="text-gray-800 mt-1 p-3 bg-gray-50 rounded">设备开机后无法启动，控制面板无显示，疑似电源模块故障，影响生产，请尽快处理。</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-lg shadow-sm">
+                                <div class="border-b border-border-color flex">
+                                    <button class="px-6 py-3 text-sm font-medium text-primary border-b-2 border-primary">维修记录</button>
+                                    <button class="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700">操作日志</button>
+                                </div>
+                                <div class="p-6 text-center text-gray-400 text-sm py-12">
+                                    <i class="fa fa-file-text-o text-3xl mb-2"></i>
+                                    <p>暂无维修记录，派单后工程师提交的内容将显示在这里</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-1">
+                            <div class="bg-white rounded-lg shadow-sm p-6 sticky top-6">
+                                <h4 class="font-medium text-gray-800 mb-4">工单进度</h4>
+                                <div class="relative pl-6">
+                                    <div class="absolute left-2 top-2 bottom-2 w-0.5 bg-border-color"></div>
+                                    <div class="relative mb-6">
+                                        <div class="absolute -left-6 w-4 h-4 rounded-full bg-success border-2 border-white ring-2 ring-success"></div>
+                                        <p class="text-sm font-medium text-gray-800">工单创建</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">2026-08-07 10:23</p>
+                                    </div>
+                                    <div class="relative mb-6">
+                                        <div class="absolute -left-6 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div>
+                                        <p class="text-sm text-gray-400">已派单</p>
+                                    </div>
+                                    <div class="relative mb-6">
+                                        <div class="absolute -left-6 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div>
+                                        <p class="text-sm text-gray-400">工程师接单</p>
+                                    </div>
+                                    <div class="relative mb-6">
+                                        <div class="absolute -left-6 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div>
+                                        <p class="text-sm text-gray-400">现场维修</p>
+                                    </div>
+                                    <div class="relative mb-6">
+                                        <div class="absolute -left-6 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div>
+                                        <p class="text-sm text-gray-400">客户验收</p>
+                                    </div>
+                                    <div class="relative">
+                                        <div class="absolute -left-6 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div>
+                                        <p class="text-sm text-gray-400">工单完成</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 设备管理 -->
+                <div id="page-deviceList" class="page-content hidden">
+                    <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+                        <div class="flex flex-wrap gap-4 items-end">
+                            <div class="w-48">
+                                <label class="block text-xs text-gray-600 mb-1">设备型号</label>
+                                <input type="text" class="form-input" placeholder="请输入型号">
+                            </div>
+                            <div class="w-48">
+                                <label class="block text-xs text-gray-600 mb-1">保修状态</label>
+                                <select class="form-input">
+                                    <option>全部</option>
+                                    <option>在保</option>
+                                    <option>过保</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn btn-primary">查询</button>
+                                <button class="btn btn-default">重置</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <div class="p-4 border-b border-border-color flex justify-between items-center">
+                            <h4 class="font-medium text-gray-800">设备列表</h4>
+                            <button class="btn btn-primary"><i class="fa fa-plus mr-1"></i>新增设备</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full table">
+                                <thead>
+                                    <tr>
+                                        <th>设备编号</th>
+                                        <th>设备型号</th>
+                                        <th>所属客户</th>
+                                        <th>安装时间</th>
+                                        <th>保修到期</th>
+                                        <th>保修状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="hover:bg-gray-50">
+                                        <td>SB202603001</td>
+                                        <td>CK6140数控车床</td>
+                                        <td>XX机械有限公司</td>
+                                        <td>2026-03-15</td>
+                                        <td>2027-03-14</td>
+                                        <td><span class="tag bg-success/10 text-success">在保</span></td>
+                                        <td>
+                                            <button class="text-primary text-sm mr-2">编辑</button>
+                                            <button class="text-primary text-sm mr-2">二维码</button>
+                                            <button class="text-danger text-sm">删除</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td>SB202602015</td>
+                                        <td>VMC850加工中心</td>
+                                        <td>XX电子科技有限公司</td>
+                                        <td>2026-02-20</td>
+                                        <td>2027-02-19</td>
+                                        <td><span class="tag bg-success/10 text-success">在保</span></td>
+                                        <td>
+                                            <button class="text-primary text-sm mr-2">编辑</button>
+                                            <button class="text-primary text-sm mr-2">二维码</button>
+                                            <button class="text-danger text-sm">删除</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td>SB202508008</td>
+                                        <td>LD-100激光切割机</td>
+                                        <td>XX金属制品厂</td>
+                                        <td>2025-08-10</td>
+                                        <td>2026-08-09</td>
+                                        <td><span class="tag bg-danger/10 text-danger">即将过保</span></td>
+                                        <td>
+                                            <button class="text-primary text-sm mr-2">编辑</button>
+                                            <button class="text-primary text-sm mr-2">二维码</button>
+                                            <button class="text-danger text-sm">删除</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 备件管理 -->
+                <div id="page-partList" class="page-content hidden">
+                    <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+                        <div class="flex flex-wrap gap-4 items-end">
+                            <div class="w-48">
+                                <label class="block text-xs text-gray-600 mb-1">备件名称</label>
+                                <input type="text" class="form-input" placeholder="请输入名称">
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn btn-primary">查询</button>
+                                <button class="btn btn-default">重置</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <div class="p-4 border-b border-border-color flex justify-between items-center">
+                            <h4 class="font-medium text-gray-800">备件列表</h4>
+                            <div class="flex gap-2">
+                                <button class="btn btn-default"><i class="fa fa-arrow-down mr-1"></i>入库</button>
+                                <button class="btn btn-default"><i class="fa fa-arrow-up mr-1"></i>出库</button>
+                                <button class="btn btn-primary"><i class="fa fa-plus mr-1"></i>新增备件</button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full table">
+                                <thead>
+                                    <tr>
+                                        <th>备件名称</th>
+                                        <th>规格型号</th>
+                                        <th>库存数量</th>
+                                        <th>单价(元)</th>
+                                        <th>安全库存</th>
+                                        <th>库存状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="hover:bg-gray-50">
+                                        <td>交流接触器</td>
+                                        <td>CJX2-2510</td>
+                                        <td>23</td>
+                                        <td>85.00</td>
+                                        <td>10</td>
+                                        <td><span class="tag bg-success/10 text-success">正常</span></td>
+                                        <td>
+                                            <button class="text-primary text-sm mr-2">编辑</button>
+                                            <button class="text-primary text-sm">出入库</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 bg-danger/5">
+                                        <td>电源模块</td>
+                                        <td>PM-24V-10A</td>
+                                        <td class="text-danger font-medium">2</td>
+                                        <td>320.00</td>
+                                        <td>5</td>
+                                        <td><span class="tag bg-danger/10 text-danger">库存不足</span></td>
+                                        <td>
+                                            <button class="text-primary text-sm mr-2">编辑</button>
+                                            <button class="text-primary text-sm">出入库</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td>轴承</td>
+                                        <td>6205-2RS</td>
+                                        <td>45</td>
+                                        <td>25.00</td>
+                                        <td>20</td>
+                                        <td><span class="tag bg-success/10 text-success">正常</span></td>
+                                        <td>
+                                            <button class="text-primary text-sm mr-2">编辑</button>
+                                            <button class="text-primary text-sm">出入库</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 客户管理 -->
+                <div id="page-customerList" class="page-content hidden">
+                    <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+                        <div class="flex flex-wrap gap-4 items-end">
+                            <div class="w-56">
+                                <label class="block text-xs text-gray-600 mb-1">客户名称</label>
+                                <input type="text" class="form-input" placeholder="请输入客户名称">
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn btn-primary">查询</button>
+                                <button class="btn btn-default">重置</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <div class="p-4 border-b border-border-color flex justify-between items-center">
+                            <h4 class="font-medium text-gray-800">客户列表</h4>
+                            <button class="btn btn-primary"><i class="fa fa-plus mr-1"></i>新增客户</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full table">
+                                <thead>
+                                    <tr>
+                                        <th>客户名称</th>
+                                        <th>联系人</th>
+                                        <th>联系电话</th>
+                                        <th>地址</th>
+                                        <th>设备数量</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="hover:bg-gray-50">
+                                        <td>XX机械有限公司</td>
+                                        <td>王主任</td>
+                                        <td>138****5678</td>
+                                        <td>XX市XX区工业园12号</td>
+                                        <td>8</td>
+                                        <td>
+                                            <button class="text-primary text-sm mr-2">编辑</button>
+                                            <button class="text-primary text-sm">查看设备</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td>XX电子科技有限公司</td>
+                                        <td>李经理</td>
+                                        <td>139****1234</td>
+                                        <td>XX市XX区开发区8号</td>
+                                        <td>12</td>
+                                        <td>
+                                            <button class="text-primary text-sm mr-2">编辑</button>
+                                            <button class="text-primary text-sm">查看设备</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td>XX食品加工厂</td>
+                                        <td>张厂长</td>
+                                        <td>137****9876</td>
+                                        <td>XX市XX区食品工业园3号</td>
+                                        <td>5</td>
+                                        <td>
+                                            <button class="text-primary text-sm mr-2">编辑</button>
+                                            <button class="text-primary text-sm">查看设备</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 移动端页面通用容器 -->
+                <div id="mobilePageContainer" class="hidden flex justify-center items-start py-4">
+                    <div class="phone-frame">
+                        <div class="phone-status-bar">
+                            <span>9:41</span>
+                            <div class="flex items-center gap-1">
+                                <i class="fa fa-signal text-xs"></i>
+                                <i class="fa fa-wifi text-xs"></i>
+                                <i class="fa fa-battery-full text-xs"></i>
+                            </div>
+                        </div>
+                        <div id="mobileContent" class="h-[calc(100%-44px)] overflow-y-auto bg-bg-gray"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 新建工单弹窗 -->
+    <div id="createTicketModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto">
+            <div class="p-4 border-b border-border-color flex justify-between items-center">
+                <h3 class="font-medium text-gray-800">新建工单</h3>
+                <button onclick="closeCreateTicketModal()" class="text-gray-400 hover:text-gray-600"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1.5"><span class="text-danger">*</span> 客户名称</label>
+                        <select class="form-input">
+                            <option>请选择客户</option>
+                            <option>XX机械有限公司</option>
+                            <option>XX电子科技有限公司</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1.5"><span class="text-danger">*</span> 故障设备</label>
+                        <select class="form-input">
+                            <option>请先选择客户</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1.5"><span class="text-danger">*</span> 故障类型</label>
+                        <select class="form-input">
+                            <option>请选择</option>
+                            <option>电气故障</option>
+                            <option>机械故障</option>
+                            <option>管路故障</option>
+                            <option>软件故障</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1.5"><span class="text-danger">*</span> 优先级</label>
+                        <select class="form-input">
+                            <option>中</option>
+                            <option>低</option>
+                            <option>高</option>
+                            <option>紧急</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1.5"><span class="text-danger">*</span> 故障描述</label>
+                    <textarea class="form-input h-24" placeholder="请详细描述故障现象"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1.5">故障图片</label>
+                    <div class="border-2 border-dashed border-border-color rounded w-24 h-24 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-primary">
+                        <i class="fa fa-plus text-xl mb-1"></i>
+                        <span class="text-xs">上传图片</span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-border-color flex justify-end gap-2">
+                <button class="btn btn-default" onclick="closeCreateTicketModal()">取消</button>
+                <button class="btn btn-primary" onclick="closeCreateTicketModal()">确定提交</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 派单弹窗 -->
+    <div id="dispatchModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg w-[500px]">
+            <div class="p-4 border-b border-border-color flex justify-between items-center">
+                <h3 class="font-medium text-gray-800">分配工程师</h3>
+                <button onclick="closeDispatchModal()" class="text-gray-400 hover:text-gray-600"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">请选择负责该工单的工程师：</p>
+                <div class="space-y-2">
+                    <label class="flex items-center justify-between p-3 border border-border-color rounded cursor-pointer hover:border-primary">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="engineer" checked>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">张师傅 <span class="text-xs text-success ml-2">在线</span></p>
+                                <p class="text-xs text-gray-500">擅长：电气故障 | 当前待办：2单</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-500">距离 3.2km</span>
+                    </label>
+                    <label class="flex items-center justify-between p-3 border border-border-color rounded cursor-pointer hover:border-primary">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="engineer">
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">李师傅 <span class="text-xs text-success ml-2">在线</span></p>
+                                <p class="text-xs text-gray-500">擅长：机械故障 | 当前待办：1单</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-500">距离 5.8km</span>
+                    </label>
+                    <label class="flex items-center justify-between p-3 border border-border-color rounded cursor-pointer hover:border-primary">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="engineer">
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">王师傅 <span class="text-xs text-gray-400 ml-2">忙碌</span></p>
+                                <p class="text-xs text-gray-500">擅长：管路故障 | 当前待办：5单</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-500">距离 8.1km</span>
+                    </label>
+                </div>
+            </div>
+            <div class="p-4 border-t border-border-color flex justify-end gap-2">
+                <button class="btn btn-default" onclick="closeDispatchModal()">取消</button>
+                <button class="btn btn-primary" onclick="closeDispatchModal()">确认派单</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 登录
+        function login() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('adminLayout').classList.remove('hidden');
+            initChart();
+        }
+        function logout() {
+            document.getElementById('adminLayout').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+        }
+
+        // 页面切换
+        const pageTitles = {
+            dashboard: '数据看板',
+            ticketList: '工单管理',
+            ticketDetail: '工单详情',
+            deviceList: '设备管理',
+            partList: '备件管理',
+            customerList: '客户管理',
+            engineerTicket: '工程师端 - 我的工单',
+            engineerHandle: '工程师端 - 工单处理',
+            engineerProfile: '工程师端 - 个人中心',
+            customerHome: '客户端 - 报修首页',
+            customerSubmit: '客户端 - 提交报修',
+            customerProgress: '客户端 - 工单进度',
+        };
+        const mobilePages = ['engineerTicket','engineerHandle','engineerProfile','customerHome','customerSubmit','customerProgress'];
+
+        function switchPage(pageId, el) {
+            // 切换菜单高亮
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            // 切换标题
+            document.getElementById('pageTitle').textContent = pageTitles[pageId] || '';
+
+            // 隐藏所有页面
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+            document.getElementById('mobilePageContainer').classList.add('hidden');
+
+            if (mobilePages.includes(pageId)) {
+                document.getElementById('mobilePageContainer').classList.remove('hidden');
+                renderMobilePage(pageId);
+            } else {
+                const page = document.getElementById('page-' + pageId);
+                if (page) page.classList.remove('hidden');
+            }
+        }
+
+        // 渲染移动端页面
+        function renderMobilePage(pageId) {
+            const container = document.getElementById('mobileContent');
+            const pages = {
+                engineerTicket: `
+                    <div class="bg-white px-4 py-3 border-b border-border-color sticky top-0 z-10">
+                        <h3 class="text-center font-medium text-gray-800">我的工单</h3>
+                    </div>
+                    <div class="flex bg-white border-b border-border-color">
+                        <button class="flex-1 py-3 text-sm font-medium text-primary border-b-2 border-primary">待接单 (2)</button>
+                        <button class="flex-1 py-3 text-sm text-gray-500">处理中 (3)</button>
+                        <button class="flex-1 py-3 text-sm text-gray-500">已完成</button>
+                    </div>
+                    <div class="p-3 space-y-3">
+                        <div class="bg-white rounded-lg p-4 shadow-sm" onclick="switchPage('engineerHandle', document.querySelector('[data-page=engineerHandle]'))">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-sm font-medium text-gray-800">GD20260807001</span>
+                                <span class="tag bg-warning/10 text-warning">待接单</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-1">XX机械有限公司 - 数控车床</p>
+                            <p class="text-xs text-gray-500 mb-3">电气故障 - 设备无法启动</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-400"><i class="fa fa-map-marker mr-1"></i>3.2km · 10:23</span>
+                                <button class="btn btn-primary btn-sm">接单</button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm" onclick="switchPage('engineerHandle', document.querySelector('[data-page=engineerHandle]'))">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-sm font-medium text-gray-800">GD20260807002</span>
+                                <span class="tag bg-warning/10 text-warning">待接单</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-1">XX电子科技 - 加工中心</p>
+                            <p class="text-xs text-gray-500 mb-3">机械故障 - 主轴异响</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-400"><i class="fa fa-map-marker mr-1"></i>5.8km · 09:15</span>
+                                <button class="btn btn-primary btn-sm">接单</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-16"></div>
+                    <div class="fixed bottom-0 w-[359px] bg-white border-t border-border-color flex h-14">
+                        <button class="flex-1 flex flex-col items-center justify-center text-primary text-xs">
+                            <i class="fa fa-list text-lg mb-0.5"></i>工单
+                        </button>
+                        <button class="flex-1 flex flex-col items-center justify-center text-gray-400 text-xs" onclick="switchPage('engineerProfile', document.querySelector('[data-page=engineerProfile]'))">
+                            <i class="fa fa-user text-lg mb-0.5"></i>我的
+                        </button>
+                    </div>
+                `,
+                engineerHandle: `
+                    <div class="bg-white px-4 py-3 border-b border-border-color flex items-center sticky top-0 z-10">
+                        <button onclick="switchPage('engineerTicket', document.querySelector('[data-page=engineerTicket]'))" class="text-gray-600 mr-3"><i class="fa fa-arrow-left"></i></button>
+                        <h3 class="font-medium text-gray-800">工单处理</h3>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-medium text-gray-800">GD20260807001</span>
+                                <span class="tag bg-warning/10 text-warning">待接单</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-primary/5 rounded mb-3">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800">XX机械有限公司</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">XX市XX区工业园12号</p>
+                                </div>
+                                <button class="text-primary"><i class="fa fa-map-o text-xl"></i></button>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div><span class="text-gray-500">设备：</span>CK6140数控车床</div>
+                                <div><span class="text-gray-500">故障：</span>电气故障 - 设备无法启动</div>
+                                <div><span class="text-gray-500">联系人：</span>王主任 138****5678</div>
+                                <div class="pt-2 border-t border-border-color">
+                                    <p class="text-gray-500 mb-1">故障描述：</p>
+                                    <p class="text-gray-700">设备开机后无法启动，控制面板无显示，疑似电源模块故障。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <p class="text-sm font-medium text-gray-800 mb-3">处理记录</p>
+                            <div class="text-center text-gray-400 text-xs py-6">
+                                接单后可上传维修记录和现场照片
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fixed bottom-0 w-[359px] bg-white border-t border-border-color p-3 flex gap-3">
+                        <button class="flex-1 btn btn-default py-2">拒单</button>
+                        <button class="flex-1 btn btn-primary py-2">接单</button>
+                    </div>
+                `,
+                engineerProfile: `
+                    <div class="bg-white px-4 py-3 border-b border-border-color sticky top-0 z-10">
+                        <h3 class="text-center font-medium text-gray-800">个人中心</h3>
+                    </div>
+                    <div class="p-4">
+                        <div class="bg-white rounded-lg p-4 shadow-sm flex items-center gap-4 mb-4">
+                            <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl">
+                                <i class="fa fa-user"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-800">张师傅</p>
+                                <p class="text-xs text-gray-500 mt-1">高级维修工程师 · 工号 E001</p>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm mb-4">
+                            <div class="grid grid-cols-3 divide-x divide-border-color">
+                                <div class="p-4 text-center">
+                                    <p class="text-xl font-bold text-gray-800">28</p>
+                                    <p class="text-xs text-gray-500 mt-1">本月接单数</p>
+                                </div>
+                                <div class="p-4 text-center">
+                                    <p class="text-xl font-bold text-success">26</p>
+                                    <p class="text-xs text-gray-500 mt-1">已完工</p>
+                                </div>
+                                <div class="p-4 text-center">
+                                    <p class="text-xl font-bold text-warning">4.9</p>
+                                    <p class="text-xs text-gray-500 mt-1">平均评分</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm divide-y divide-border-color">
+                            <div class="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50">
+                                <div class="flex items-center gap-3 text-sm text-gray-700">
+                                    <i class="fa fa-list text-primary w-5"></i>我的工单
+                                </div>
+                                <i class="fa fa-angle-right text-gray-400"></i>
+                            </div>
+                            <div class="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50">
+                                <div class="flex items-center gap-3 text-sm text-gray-700">
+                                    <i class="fa fa-cubes text-primary w-5"></i>我的备件
+                                </div>
+                                <i class="fa fa-angle-right text-gray-400"></i>
+                            </div>
+                            <div class="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50">
+                                <div class="flex items-center gap-3 text-sm text-gray-700">
+                                    <i class="fa fa-cog text-primary w-5"></i>设置
+                                </div>
+                                <i class="fa fa-angle-right text-gray-400"></i>
+                            </div>
+                            <div class="px-4 py-3 flex items-center justify-center cursor-pointer text-danger text-sm hover:bg-gray-50">
+                                退出登录
+                            </div>
+                        </div>
+                    </div>
+                `,
+                customerHome: `
+                    <div class="bg-white px-4 py-3 border-b border-border-color sticky top-0 z-10">
+                        <h3 class="text-center font-medium text-gray-800">设备报修</h3>
+                    </div>
+                    <div class="p-4">
+                        <div class="bg-gradient-to-br from-primary to-primary/70 rounded-xl p-6 text-white mb-6">
+                            <h4 class="text-lg font-medium mb-1">设备故障？一键报修</h4>
+                            <p class="text-white/80 text-sm">扫码快速报修，工程师快速响应</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-white rounded-xl p-6 shadow-sm flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-shadow" onclick="switchPage('customerSubmit', document.querySelector('[data-page=customerSubmit]'))">
+                                <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl mb-3">
+                                    <i class="fa fa-qrcode"></i>
+                                </div>
+                                <p class="font-medium text-gray-800">扫码报修</p>
+                                <p class="text-xs text-gray-500 mt-1">扫描设备二维码快速填报</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-6 shadow-sm flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-shadow" onclick="switchPage('customerSubmit', document.querySelector('[data-page=customerSubmit]'))">
+                                <div class="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center text-success text-2xl mb-3">
+                                    <i class="fa fa-pencil"></i>
+                                </div>
+                                <p class="font-medium text-gray-800">手动报修</p>
+                                <p class="text-xs text-gray-500 mt-1">手动选择设备填报故障</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-6 shadow-sm flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-shadow" onclick="switchPage('customerProgress', document.querySelector('[data-page=customerProgress]'))">
+                                <div class="w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center text-warning text-2xl mb-3">
+                                    <i class="fa fa-file-text-o"></i>
+                                </div>
+                                <p class="font-medium text-gray-800">我的工单</p>
+                                <p class="text-xs text-gray-500 mt-1">查看报修进度和历史</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                customerSubmit: `
+                    <div class="bg-white px-4 py-3 border-b border-border-color flex items-center sticky top-0 z-10">
+                        <button onclick="switchPage('customerHome', document.querySelector('[data-page=customerHome]'))" class="text-gray-600 mr-3"><i class="fa fa-arrow-left"></i></button>
+                        <h3 class="font-medium text-gray-800">提交报修</h3>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-sm font-medium text-gray-800">设备信息</span>
+                                <span class="text-xs text-primary">扫码自动识别</span>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">设备编号</span>
+                                    <span class="text-gray-800">SB202603001</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">设备型号</span>
+                                    <span class="text-gray-800">CK6140数控车床</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">安装时间</span>
+                                    <span class="text-gray-800">2026-03-15</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm space-y-4">
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-2"><span class="text-danger">*</span> 故障类型</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="border border-primary bg-primary/5 text-primary rounded p-2 text-center text-sm cursor-pointer">电气故障</label>
+                                    <label class="border border-border-color rounded p-2 text-center text-sm text-gray-600 cursor-pointer">机械故障</label>
+                                    <label class="border border-border-color rounded p-2 text-center text-sm text-gray-600 cursor-pointer">管路故障</label>
+                                    <label class="border border-border-color rounded p-2 text-center text-sm text-gray-600 cursor-pointer">其他故障</label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-2"><span class="text-danger">*</span> 故障描述</label>
+                                <textarea class="form-input h-24" placeholder="请详细描述故障现象，方便工程师提前准备"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-2">上传图片</label>
+                                <div class="flex gap-2">
+                                    <div class="w-20 h-20 border-2 border-dashed border-border-color rounded flex flex-col items-center justify-center text-gray-400">
+                                        <i class="fa fa-camera text-xl mb-1"></i>
+                                        <span class="text-xs">拍照</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-2"><span class="text-danger">*</span> 联系电话</label>
+                                <input type="tel" class="form-input" value="138****5678">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fixed bottom-0 w-[359px] bg-white border-t border-border-color p-3">
+                        <button class="w-full btn btn-primary py-2.5" onclick="switchPage('customerProgress', document.querySelector('[data-page=customerProgress]'))">提交报修</button>
+                    </div>
+                `,
+                customerProgress: `
+                    <div class="bg-white px-4 py-3 border-b border-border-color flex items-center sticky top-0 z-10">
+                        <button onclick="switchPage('customerHome', document.querySelector('[data-page=customerHome]'))" class="text-gray-600 mr-3"><i class="fa fa-arrow-left"></i></button>
+                        <h3 class="font-medium text-gray-800">工单进度</h3>
+                    </div>
+                    <div class="p-4">
+                        <div class="bg-white rounded-lg p-4 shadow-sm mb-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm font-medium text-gray-800">GD20260807001</span>
+                                <span class="tag bg-primary/10 text-primary">维修中</span>
+                            </div>
+                            <div class="relative pl-6">
+                                <div class="absolute left-2 top-2 bottom-2 w-0.5 bg-border-color"></div>
+                                <div class="relative mb-5">
+                                    <div class="absolute -left-6 w-4 h-4 rounded-full bg-success border-2 border-white ring-2 ring-success"></div>
+                                    <p class="text-sm font-medium text-gray-800">报修提交成功</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">2026-08-07 10:23</p>
+                                </div>
+                                <div class="relative mb-5">
+                                    <div class="absolute -left-6 w-4 h-4 rounded-full bg-success border-2 border-white ring-2 ring-success"></div>
+                                    <p class="text-sm font-medium text-gray-800">已派单</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">2026-08-07 10:30 · 张师傅</p>
+                                </div>
+                                <div class="relative mb-5">
+                                    <div class="absolute -left-6 w-4 h-4 rounded-full bg-success border-2 border-white ring-2 ring-success"></div>
+                                    <p class="text-sm font-medium text-gray-800">工程师已接单</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">2026-08-07 10:35</p>
+                                </div>
+                                <div class="relative mb-5">
+                                    <div class="absolute -left-6 w-4 h-4 rounded-full bg-primary border-2 border-white ring-2 ring-primary animate-pulse"></div>
+                                    <p class="text-sm font-medium text-primary">正在维修中</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">工程师已到达现场</p>
+                                </div>
+                                <div class="relative mb-5">
+                                    <div class="absolute -left-6 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div>
+                                    <p class="text-sm text-gray-400">维修完成</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="absolute -left-6 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div>
+                                    <p class="text-sm text-gray-400">验收完成</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm mb-4">
+                            <p class="text-sm font-medium text-gray-800 mb-3">工程师信息</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                        <i class="fa fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">张师傅</p>
+                                        <p class="text-xs text-gray-500">高级维修工程师</p>
+                                    </div>
+                                </div>
+                                <a href="tel:13800138000" class="btn btn-primary btn-sm"><i class="fa fa-phone mr-1"></i>联系工程师</a>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <p class="text-sm font-medium text-gray-800 mb-2">故障信息</p>
+                            <p class="text-sm text-gray-600">设备开机后无法启动，控制面板无显示，疑似电源模块故障。</p>
+                        </div>
+                    </div>
+                `
+            };
+            container.innerHTML = pages[pageId] || '';
+        }
+
+        // 弹窗
+        function openCreateTicketModal() { document.getElementById('createTicketModal').classList.remove('hidden'); }
+        function closeCreateTicketModal() { document.getElementById('createTicketModal').classList.add('hidden'); }
+        function openDispatchModal() { document.getElementById('dispatchModal').classList.remove('hidden'); }
+        function closeDispatchModal() { document.getElementById('dispatchModal').classList.add('hidden'); }
+
+        // 初始化图表
+        let chartInited = false;
+        function initChart() {
+            if (chartInited) return;
+            const ctx = document.getElementById('statusChart');
+            if (!ctx) return;
+            new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['待派单', '待接单', '维修中', '待验收', '已完成'],
+                    datasets: [{
+                        data: [3, 5, 3, 2, 18],
+                        backgroundColor: ['#ff4d4f','#faad14','#1890ff','#722ed1','#52c41a'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { padding: 15, usePointStyle: true, pointStyle: 'circle' } } },
+                    cutout: '60%'
+                }
+            });
+            chartInited = true;
+        }
+    </script>
+</body>
+</html>
