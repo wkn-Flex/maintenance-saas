@@ -26,11 +26,11 @@ app.add_middleware(
 
 # 2. 数据库配置：本地用SQLite，线上自动用Render的PostgreSQL
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./maintenance.db")
-# 兼容不同平台的数据库连接串格式，使用psycopg3驱动
+# 兼容不同平台的数据库连接串格式，使用纯Python的pg8000驱动
 if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+pg8000://", 1)
 elif DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+pg8000://", 1)
 
 connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
