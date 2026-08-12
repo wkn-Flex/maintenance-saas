@@ -14,10 +14,11 @@ app = FastAPI(
     description="工业设备售后维保管理系统后端接口文档",
     version="1.0.0",
     docs_url="/api/docs",
-    openapi_url="/api/openapi.json"
+    openapi_url="/api/openapi.json",
+    root_path="/api"
 )
 
-# 允许跨域（线上前端和后端域名不同需要）
+# 允许跨域
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,15 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 2. 数据库配置：本地用SQLite，线上自动用Render的PostgreSQL
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./maintenance.db")
-# 兼容不同平台的数据库连接串格式，使用纯Python的pg8000驱动
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+pg8000://", 1)
-elif DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+pg8000://", 1)
-
-connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+# 2. 数据库配置：线上用/tmp临时目录SQLite，自动初始化演示数据，无外部依赖
+DATABASE_URL = "sqlite:////tmp/maintenance.db"
+connect_args = {"check_same_thread": False}
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -84,6 +79,16 @@ class WorkOrder(Base):
 
 # 4. 启动时自动创建所有数据表
 Base.metadata.create_all(bind=engine)
+
+# 应用启动时自动初始化演示数据，冷启动也能直接看到内容
+@app.on_event("startup")
+def auto_init_data():
+    db = SessionLocal()
+    try:
+        if db.query(WorkOrder).count() == 0:
+            init_test_data(db)
+    finally:
+        db.close()
 
 # 5. 数据库依赖
 def get_db():
