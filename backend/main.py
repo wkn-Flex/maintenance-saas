@@ -27,8 +27,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 2. 数据库配置：本地用SQLite，线上自动用Render的PostgreSQL
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./maintenance.db")
+# 2. 数据库配置：本地用SQLite，PythonAnywhere用有写权限的目录
+if os.path.exists("/home/wkn2yth"):
+    DATABASE_URL = "sqlite:////home/wkn2yth/maintenance.db"
+else:
+    DATABASE_URL = "sqlite:///./maintenance.db"
 # 兼容Render的数据库连接串格式
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
