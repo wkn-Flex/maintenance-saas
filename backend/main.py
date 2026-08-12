@@ -1,5 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -452,3 +455,32 @@ def init_test_data(db: Session = Depends(get_db)):
     db.commit()
     
     return {"code": 200, "message": "测试数据生成成功：3个工程师、3个客户、3台设备、7条测试工单"}
+
+# 15. 托管前端静态页面（线上部署时一个服务同时跑前后端）
+FRONTEND_DIST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
+if os.path.exists(FRONTEND_DIST):
+    # 挂载静态资源
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")), name="assets")
+    
+    # 所有非API路由返回前端首页，支持Vue history路由模式
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        # 排除API和文档路径
+        if full_path.startswith("api/") or full_path in ["docs", "openapi.json", "redoc"]:
+            raise HTTPException(status_code=404)
+        # 如果是具体静态文件直接返回
+        file_path = os.path.join(FRONTEND_DIST, full_path)
+        if full_path and os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        # 其他路径返回首页
+        return FileResponse(os.path.join(FRONTEND_DIST, "index.html"))
+
+# 启动自动初始化演示数据
+@app.on_event("startup")
+def auto_init():
+    db = SessionLocal()
+    try:
+        if db.query(WorkOrder).count() == 0:
+            init_test_data(db)
+    finally:
+        db.close()

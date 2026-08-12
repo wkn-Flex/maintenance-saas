@@ -1,0 +1,1 @@
+import{_ as c,a as n,j as a,d as r,f as e,b as s}from"./index-ByXxlEIw.js";const _={};function l(d,p){const o=e("el-empty"),t=e("el-card");return n(),a(t,null,{default:r(()=>[s(o,{description:"功能开发中，敬请期待"})]),_:1})}const m=c(_,[["render",l]]);export{m as default};
